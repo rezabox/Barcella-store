@@ -17,6 +17,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "../ui/textarea";
 import ImageUpload from "../custom ui/ImageUpload";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import toast from "react-hot-toast";
+
 
 const formSchema = z.object({
   username: z.string().min(2).max(500),
@@ -26,6 +29,7 @@ const formSchema = z.object({
 
 function CollectionForm() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -34,9 +38,28 @@ function CollectionForm() {
       image: "",
     },
   });
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement> | React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+    }
+  }
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+     try{
+       setLoading(true);  
+       const res = await fetch("/api/collections", {
+            method:"POST",
+            body: JSON.stringify(values),
+       });
+       if (res.ok){
+          setLoading(false);
+          toast.success("Collection created")
+          router.push("/collections");
+       }
+     } catch (err) {
+        console.log("[collections_POST]", err);
+        toast.error("Something went wrong! Please try again");  
+     }
   };
 
   return (
@@ -52,7 +75,7 @@ function CollectionForm() {
               <FormItem>
                 <FormLabel>Title</FormLabel>
                 <FormControl>
-                  <Input placeholder="Title" {...field} />
+                  <Input placeholder="Title" {...field} onKeyDown={handleKeyPress} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -65,7 +88,7 @@ function CollectionForm() {
               <FormItem>
                 <FormLabel>description</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="description" {...field} rows={5} />
+                  <Textarea placeholder="description" {...field} rows={5} onKeyDown={handleKeyPress}/>
                 </FormControl>
                 <FormMessage />
               </FormItem>
