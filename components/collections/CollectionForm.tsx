@@ -1,8 +1,7 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Separator } from "../ui/separator";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -15,67 +14,64 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "../ui/textarea";
+import { z } from "zod";
+import { Separator } from "../ui/separator";
 import ImageUpload from "../custom ui/ImageUpload";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import toast from "react-hot-toast";
 
-
 const formSchema = z.object({
-  username: z.string().min(2).max(500),
+  title: z.string().min(2).max(50),
   description: z.string().min(2).max(500).trim(),
   image: z.string(),
 });
 
-function CollectionForm() {
+const CollectionForm = () => {
   const router = useRouter();
+
   const [loading, setLoading] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      title: "",
       description: "",
       image: "",
     },
   });
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement> | React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-    }
-  }
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-     try{
-       setLoading(true);  
-       const res = await fetch("/api/collections", {
-            method:"POST",
+      try {
+        setLoading(true);
+        const res = await fetch("/api/collections",{
+            method: "POST",
             body: JSON.stringify(values),
-       });
-       if (res.ok){
-          setLoading(false);
-          toast.success("Collection created")
-          router.push("/collections");
-       }
-     } catch (err) {
-        console.log("[collections_POST]", err);
-        toast.error("Something went wrong! Please try again");  
-     }
-  };
+        });
+         if(res.ok) {
+           setLoading(false);
+           toast.success("Collection created ");
+           router.push("/collections");
+         }
+      } catch (err) {
+         console.log("[collections_POST]", err);
+         toast.error("Faild to create collection");
+      }  
 
+  };
   return (
     <div className="p-10">
       <p className="text-heading2-bold">Create Collection</p>
-      <Separator className="bg-grey-1 mt-4 mb-7 my-4" />
+      <Separator className="bg-gray-1 mt-4 mb-7" />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
             control={form.control}
-            name="username"
+            name="title"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Title</FormLabel>
                 <FormControl>
-                  <Input placeholder="Title" {...field} onKeyDown={handleKeyPress} />
+                  <Input placeholder="Title" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -86,9 +82,9 @@ function CollectionForm() {
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>description</FormLabel>
+                <FormLabel>Title</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="description" {...field} rows={5} onKeyDown={handleKeyPress}/>
+                  <Textarea placeholder="Description" {...field} rows={5} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -112,16 +108,13 @@ function CollectionForm() {
             )}
           />
           <div className="flex gap-10">
-            <Button type="submit" className="bg-blue-1 text-white">
-              Submit
-            </Button>
-            <Button type="button" onClick={() => router.push("/collections")} className="bg-blue-1 text-white">
-              Discard
-            </Button>
+              <Button type="submit" className="bg-blue-1 text-white">Submit</Button>
+              <Button type="button" onClick={() => router.push("/collections")} className="bg-blue-1 text-white">Discard</Button>
           </div>
         </form>
       </Form>
     </div>
   );
-}
+};
 export default CollectionForm;
+
