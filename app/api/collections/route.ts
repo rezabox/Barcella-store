@@ -33,8 +33,8 @@ export const POST = async (req: NextRequest) => {
     })
 
     await newCollection.save()
-
     return NextResponse.json(newCollection, { status: 200 })
+
   } catch (err) {
     console.log("[collections_POST]", err)
     return new NextResponse("Internal Server Error", { status: 500 })
